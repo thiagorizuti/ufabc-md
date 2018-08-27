@@ -11805,19 +11805,11 @@ div#notebook {
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">librosa</span> 
-<span class="kn">import</span> <span class="nn">librosa.display</span> <span class="k">as</span> <span class="nn">display</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span> 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> 
 <span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span> 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span> 
 <span class="o">%</span><span class="k">matplotlib</span> inline
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">HTML</span>
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">StandardScaler</span>
-<span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="k">import</span> <span class="n">GaussianNB</span>
-<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="k">import</span> <span class="n">KNeighborsClassifier</span>
-<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LogisticRegression</span>
-<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="k">import</span> <span class="n">DecisionTreeClassifier</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">RandomForestClassifier</span>
 </pre></div>
 
 </div>
@@ -11842,7 +11834,7 @@ div#notebook {
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
 <span class="o">%</span><span class="k">autoreload</span> 2
 <span class="o">%</span><span class="k">aimport</span> codigo
-<span class="kn">from</span> <span class="nn">codigo</span> <span class="k">import</span> <span class="n">read_audio</span><span class="p">,</span> <span class="n">extract_features</span><span class="p">,</span> <span class="n">train_model</span><span class="p">,</span> <span class="n">evaluation_per_character</span><span class="p">,</span> <span class="n">evaluation_per_captcha</span>
+<span class="kn">from</span> <span class="nn">codigo</span> <span class="k">import</span> <span class="n">read_audio</span><span class="p">,</span> <span class="n">extract_features</span><span class="p">,</span> <span class="n">select_model</span><span class="p">,</span> <span class="n">train_model</span><span class="p">,</span> <span class="n">evaluate_model</span> 
 </pre></div>
 
 </div>
@@ -11854,7 +11846,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Para fins de reprodutibilidade definimos a random seed como 42</p>
+<h1 id="An&#225;lise-Explorat&#243;ria">An&#225;lise Explorat&#243;ria<a class="anchor-link" href="#An&#225;lise-Explorat&#243;ria">&#182;</a></h1><p>O primeiro desafio foi segmentar cada captcha separando o áudio referente a cada caractere. Para isso utilizamos a função load da biblioteca librosa que retorna a série temporal do áudio e a taxa de amostragem dela. Observamos as séries temporais de alguns captchas e identificamos que eles condiziam com o processo de gravação dos áudios, pois havia uma separação visual a cada dois segundos entre as oscilações mais representativas.</p>
 
 </div>
 </div>
@@ -11864,33 +11856,11 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="An&#225;lise-Explorat&#243;ria">An&#225;lise Explorat&#243;ria<a class="anchor-link" href="#An&#225;lise-Explorat&#243;ria">&#182;</a></h1><p>O primeiro desafio foi segmentar cada captcha separando o áudio referente a cada caractere. Para isso utilizamos a função load da biblioteca librosa que retorna a série temporal do áudio e a taxa de amostragem dela. Observamos as séries temporais de alguns captchas e identificamos que eles condiziam com o processo de gravação dos áudios, pois havia uma separação visual a cada dois segundos (eixo Time) entre as oscilações mais representativas.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;fase_1_corrigida/base_treinamento_I/bnma.wav&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">signal</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;base_treinamento_I/bnma.wav&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;captcha&#39;</span><span class="p">)</span>
-<span class="n">librosa</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">waveplot</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -11903,13 +11873,13 @@ div#notebook {
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[4]:</div>
+<div class="prompt output_prompt">Out[3]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>&lt;matplotlib.collections.PolyCollection at 0x116709630&gt;</pre>
+<pre>[&lt;matplotlib.lines.Line2D at 0x1121b65c0&gt;]</pre>
 </div>
 
 </div>
@@ -11922,211 +11892,177 @@ div#notebook {
 
 
 <div class="output_png output_subarea ">
-<img src="data:image/png;base64,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
-FEO6Sf0p4PKgaymQC4D3p8d6/Bh4j5n9a7AlFU76kyrufgB4gFR3djnaBezKaCH8KakQU86uAF5w
-9/1BF1JAy4DX3L3Z3XuB+4HzA65pQGEKLc8D881sXjr5XgM8GHBNkqP04NTvARvd/WtB11NIZtZk
-ZuPTj6tJDSrfFGxVheHun3H3me4+l9Tv6i/cvSQ/ueXKzGrTg8hJd5W8FyjLq/7cfR+w08xOS6+6
-FCi7QfP9XEsZdw2lvQ6cZ2Y16ffkS0mNLyw5obnLs7v3mdnNwGNAFLjb3dcHXFbBmNmPgIuBSWa2
-C/isu38v2KoK4gLgOmBdeqwHwN+4+4oAayqUacA96SsRIsC97l7WlwKPEVOAB1Lv9cSAf3P3R4Mt
-qaA+Dvww/eFxG/AnAddTMOkQehnwsaBrKSR3/62Z/RR4AegDXqREp/QPzSXPIiIiMraFqXtIRERE
-xjCFFhEREQkFhRYREREJBYUWERERCQWFFhEREQmF0FzyLCLhZ2YTgZXpxalAgtS08AAd7l6SE1qJ
-SGnQJc8iEggz+xxwzN2/GnQtIhIO6h4SkZJgZsfS/15sZk+b2c/NbJuZ3W5mHzaz58xsnZmdnN6v
-yczuM7Pn018XBPsKRKTQFFpEpBQtAm4ETic1Y/Kp7r4UuIvUjKwA3wS+7u5vBz6Y3iYiZUxjWkSk
-FD3v7nsBzGwr8Hh6/TrgkvTjZcDC9PT5AA1mVufux4paqYgUjUKLiJSi7ozHyYzlJG+8b0WA89y9
-q5iFiUhw1D0kImH1OG90FWFmiwOsRUSKQKFFRMLqvwJLzGytmW0gNQZGRMqYLnkWERGRUFBLi4iI
-iISCQouIiIiEgkKLiIiIhIJCi4iIiISCQouIiIiEgkKLiIiIhIJCi4iIiITC/wdvYsK5ER/p8wAA
-AABJRU5ErkJggg==
+<img src="data:image/png;base64,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
+/weX7VXEBbMmHgAAAABJRU5ErkJggg==
 "
 >
 </div>
@@ -12139,7 +12075,7 @@ AABJRU5ErkJggg==
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">chars</span> <span class="o">=</span> <span class="p">[]</span> 
@@ -12429,7 +12365,55 @@ nHPOxZInKOecc7HkCco551wseYJyzjkXS56gnHPOxdL/Bw3il8m6hu8wAAAAAElFTkSuQmCC
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Decidimos então quebrar a série temporal de cada captcha em 4 intervalo de 2 segundos.</p>
-<p>Usamos a função read_audio para ler e dividir em caracteres as bases de treinamento e validação.</p>
+<p>Usamos a função read_audio para ler e dividir em caracteres as bases de treinamento e validação. Definimos como base de treinamento a união das bases da primeira etapa com a base de treinamento da segunda etapa. Para validação, usamos a base de validação da segunda etapa.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_audios</span> <span class="o">=</span> <span class="n">read_audio</span><span class="p">(</span><span class="s1">&#39;base_treinamento_I&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">read_audio</span><span class="p">(</span><span class="s1">&#39;base_treinamento_II&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">read_audio</span><span class="p">(</span><span class="s1">&#39;base_validacao_I&#39;</span><span class="p">)</span>
+<span class="n">valid_audios</span> <span class="o">=</span> <span class="n">read_audio</span><span class="p">(</span><span class="s1">&#39;base_validacao_II&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;base de treinamento: &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_audios</span><span class="p">),</span> <span class="s1">&#39; caracteres&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;base de validação: &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_audios</span><span class="p">),</span> <span class="s1">&#39; caracteres&#39;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>base de treinamento:  2020  caracteres
+base de validação:  596  caracteres
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Para a extração das variáveis de cada caractere utilizamos o Mel Frequency Cepstral Coefficents (MFCCs) que é uma ferramenta amplamente utilizada para reconhecimento automático de fala.</p>
+<p>Os sons gerados por humanos são filtrados pelo formato do trato vocal, incluindo a língua, os dentes, etc. Este formato determina como o som é emitido. Considerando que seja possível determinar acuradamente este formato, podemos então assumir que temos uma representação acurada do fonema que está sendo reproduzido.</p>
+<p>O formato do trato vocal se manifesta em um envelope do espectro de força em um espaço curto de tempo, e o trabalho dos MFCCs é representar este envelope de maneira precisa.</p>
+<p>O processamento do Mel-Frequency Cepstral Coefficients realiza primeiramente o janelamento e aplica a Transformada Discreta de Fourier (DFT). A amplitude da Transformada de Fourier é filtrada por janelas triangulares na escala Mel e então aplica-se o logaritmo. A Transformada Discreta de Cosseno é aplicada e os Coeficientes Mel-Cepstrais são as amplitudes resultantes.</p>
+<p>Na função extract_features utilizamos biblioteca librosa para obter a sequência de MFCCs de cada caractere. Este processo retorna uma matriz com 40 linhas e 173 colunas por caractere. Calculamos então, a média da moda, o valor mínimo, o valor máximo, a média, o desvio padrão, a mediana, a amplitude interquartil, a curtose e a assimetria por linha.</p>
 
 </div>
 </div>
@@ -12439,11 +12423,12 @@ nHPOxZInKOecc7HkCco551wseYJyzjkXS56gnHPOxdL/Bw3il8m6hu8wAAAAAElFTkSuQmCC
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_audios</span> <span class="o">=</span> <span class="n">read_audio</span><span class="p">(</span><span class="s1">&#39;fase_1_corrigida/base_treinamento_I/&#39;</span><span class="p">)</span>
-<span class="n">valid_audios</span> <span class="o">=</span> <span class="n">read_audio</span><span class="p">(</span><span class="s1">&#39;fase_1_corrigida/base_validacao_I&#39;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">time</span>
+train_data = extract_features(train_audios)
+valid_data = extract_features(valid_audios)
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;base de treinamento: &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_audios</span><span class="p">),</span> <span class="s1">&#39; captchas&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;base de validação: &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_audios</span><span class="p">),</span> <span class="s1">&#39; captchas&#39;</span><span class="p">)</span>
+print(&#39;base de treinamento: &#39;, train_data.shape)
+print(&#39;base de validação: &#39;, valid_data.shape)
 </pre></div>
 
 </div>
@@ -12460,8 +12445,10 @@ nHPOxZInKOecc7HkCco551wseYJyzjkXS56gnHPOxdL/Bw3il8m6hu8wAAAAAElFTkSuQmCC
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>base de treinamento:  800  captchas
-base de validação:  588  captchas
+<pre>base de treinamento:  (2020, 362)
+base de validação:  (596, 362)
+CPU times: user 11min 5s, sys: 4.03 s, total: 11min 9s
+Wall time: 11min 7s
 </pre>
 </div>
 </div>
@@ -12474,11 +12461,27 @@ base de validação:  588  captchas
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Para a extração das variáveis de cada caractere utilizamos o Mel Frequency Cepstral Coefficents (MFCCs) que é a ferramenta amplamente utilizada para reconhecimento automático de fala.</p>
-<p>Os sons gerados por humanos são filtrados pelo formato do trato vocal, incluindo a língua, os dentes, etc. Este formato determina como o som é emitido. Considerando que seja possível determinar acuradamente este formato, podemos então assumir que temos uma representação acurada do fonema que está sendo reproduzido.</p>
-<p>O formato do trato vocal se manifesta em um envelope do espectro de força em um espaço curto de tempo, e o trabalho dos MFCCs é representar este envelope de maneira precisa.</p>
-<p>O processamento do Mel-Frequency Cepstral Coefficients realiza primeiramente o janelamento e aplica a Transformada Discreta de Fourier (DFT). A amplitude da Transformada de Fourier é filtrada por janelas triangulares na escala Mel e então aplica-se o logaritmo. A Transformada Discreta de Cosseno é aplicada e os Coeficientes Mel-Cepstrais são as amplitudes resultantes.</p>
-<p>Na função extract_features utilizamos a funcionalidade librosa.feature.mfcc para obter a sequência de MFCCs de cada caractere. Este processo retorna uma matriz com 20 linhas e 173 colunas por caractere. Calculamos então a média da moda, o valor mínimo, o valor máximo, a média, o desvio padrão, a mediana, a amplitude interquartil, a curtose e a assimetria por linha.</p>
+<h1 id="Metodologia">Metodologia<a class="anchor-link" href="#Metodologia">&#182;</a></h1><p>Depois de extrair as variáveis adotamos a abordagem de um problema de classificação tradicional.</p>
+<p>Utilizamos o GridSearchCV do sklearn para comparar diferentes configurações de hiperparâmetros fazendo validação cruzada com 5 folds na base de treino.</p>
+<p>Os algoritmos candidatos foram:</p>
+<ul>
+<li>K-nearest neighbors (hiperparâmetros: número de vizinhos, distâncias de manhattan e euclidiana)</li>
+<li>Regressão Logística (hiperparâmetros: peso da regularização, regularizão l1 e l2)</li>
+<li>Random Forest (hiperparâmetros: profundidade máxima).</li>
+</ul>
+<p>Os dados foram normalizados com o z-score para o k-nearest neighbors e para a regressão logística. 
+Também foi utilizada uma seleção de features baseada em informação mútua antes do k-nearest neighbors, variando no gridsearch o número de features selecionadas.</p>
+<p>Executamos o grid search para cada um dos algoritmos candidatos. Por fim, combinamos cada algoritmo com hiperparâmetros otimizados em um ensemble de votação 'soft' (média dos scores).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>A metodologia descrita foi toda implementada na função select_model. 
+A função train_model recebe o modelo final e o retreina no conjunto de treinamento.</p>
 
 </div>
 </div>
@@ -12488,11 +12491,9 @@ base de validação:  588  captchas
 <div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_data</span> <span class="o">=</span> <span class="n">extract_features</span><span class="p">(</span><span class="n">train_audios</span><span class="p">,</span><span class="n">n_mfcc</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-<span class="n">valid_data</span> <span class="o">=</span> <span class="n">extract_features</span><span class="p">(</span><span class="n">valid_audios</span><span class="p">,</span><span class="n">n_mfcc</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;base de treinamento: &#39;</span><span class="p">,</span> <span class="n">train_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;base de validação: &#39;</span><span class="p">,</span> <span class="n">valid_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">time</span>
+model = select_model(train_data)
+model = train_model(model,train_data)
 </pre></div>
 
 </div>
@@ -12509,82 +12510,78 @@ base de validação:  588  captchas
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>base de treinamento:  (800, 182)
-base de validação:  (588, 182)
+<pre>Fitting 5 folds for each of 18 candidates, totalling 90 fits
 </pre>
 </div>
 </div>
 
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>[Parallel(n_jobs=1)]: Done  90 out of  90 | elapsed: 10.2min finished
+</pre>
 </div>
 </div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Metodologia">Metodologia<a class="anchor-link" href="#Metodologia">&#182;</a></h1><p>Depois de extrair as variáveis adotamos a mesma abordagem de quando se lida com um problema de classificação tradicional.</p>
-<p>Nós utilizamos o GridSearchCV do sklearn para comparar diferentes modelos e configurações de hiperparâmetros.</p>
-<p>Definimos a validação cruzada, de modo que o conjunto de dados de treino disponibilizado pelo professor fosse utilizado para treino e o conjunto de dados de validação fosse utilizado para calcular a métrica de avaliação (acurácia). 
-Executamos o grid search uma vez para cada um dos modelos com cada uma das diferentes combinações de hiperparâmetros , calculando assim a acurácia na base de validação. 
-Desta maneira foi possível escolher o melhor modelo com a melhor combinação de hiperparâmetros selecionando o maior best_score.</p>
-<p>Os modelos testados foram:</p>
-<ul>
-<li>Gaussian Naive Bayes (hiperparâmetros: nenhum)</li>
-<li>k-nearest neighbors (hiperparâmetros: número de vizinhos, votação uniforme ou ponderada pela distância, distâncias de manhattan e euclidiana)</li>
-<li>Regressão Logística (peso da regularização, regularizão l1 e l2)</li>
-<li>Árvore de Decisão (profundidade máxima)</li>
-<li>Random Forest (profundidade máxima e número de árvores.</li>
-</ul>
-<p>Antes de treinar os modelos, usamos também o StandardScaler do sklearn para normalizar os dados com z-score.</p>
+<div class="output_area">
 
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">transformer</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<div class="prompt"></div>
 
-<span class="n">estimators</span> <span class="o">=</span> <span class="p">[</span><span class="n">GaussianNB</span><span class="p">(),</span><span class="n">KNeighborsClassifier</span><span class="p">(),</span><span class="n">LogisticRegression</span><span class="p">(),</span>
-              <span class="n">DecisionTreeClassifier</span><span class="p">(),</span><span class="n">RandomForestClassifier</span><span class="p">()]</span>
-    
-<span class="n">param_grids</span> <span class="o">=</span> <span class="p">[{},</span>
-           <span class="p">{</span><span class="s1">&#39;n_neighbors&#39;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">12</span><span class="p">],</span> <span class="s1">&#39;weights&#39;</span><span class="p">:[</span><span class="s1">&#39;uniform&#39;</span><span class="p">,</span><span class="s1">&#39;distance&#39;</span><span class="p">],</span><span class="s1">&#39;p&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]},</span>
-           <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">9</span><span class="p">),</span><span class="s1">&#39;penalty&#39;</span><span class="p">:[</span><span class="s1">&#39;l1&#39;</span><span class="p">,</span><span class="s1">&#39;l2&#39;</span><span class="p">],</span><span class="s1">&#39;random_state&#39;</span><span class="p">:[</span><span class="n">seed</span><span class="p">]},</span>
-           <span class="p">{</span><span class="s1">&#39;max_depth&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span><span class="s1">&#39;random_state&#39;</span><span class="p">:[</span><span class="n">seed</span><span class="p">]},</span>
-           <span class="p">{</span><span class="s1">&#39;max_depth&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span><span class="s1">&#39;n_estimators&#39;</span><span class="p">:[</span><span class="mi">50</span><span class="p">],</span><span class="s1">&#39;random_state&#39;</span><span class="p">:[</span><span class="n">seed</span><span class="p">]}]</span>
 
-<span class="n">metric</span> <span class="o">=</span> <span class="s1">&#39;accuracy&#39;</span>
-</pre></div>
-
-</div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Fitting 5 folds for each of 18 candidates, totalling 90 fits
+</pre>
 </div>
 </div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>A metodologia descrita foi toda implementada na função train_model. 
-A função recebe os dados de treinamento e validação, a lista de modelos, lista de hiperparâmetros, o normalizador e a métrica a ser utilizada. Retornando o normalizador ajustado, o melhor modelo treinado e uma tabela de resultados do gridsearch.</p>
+<div class="output_area">
 
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">transformer</span><span class="p">,</span> <span class="n">best_model</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">train_model</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span><span class="n">valid_data</span><span class="p">,</span><span class="n">transformer</span><span class="p">,</span><span class="n">estimators</span><span class="p">,</span>
-                                               <span class="n">param_grids</span><span class="p">,</span><span class="n">metric</span><span class="p">)</span>
-</pre></div>
+<div class="prompt"></div>
 
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>[Parallel(n_jobs=1)]: Done  90 out of  90 | elapsed: 12.5min finished
+</pre>
 </div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Fitting 5 folds for each of 18 candidates, totalling 90 fits
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>[Parallel(n_jobs=1)]: Done  90 out of  90 | elapsed: 12.7min finished
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 35min 59s, sys: 5.13 s, total: 36min 4s
+Wall time: 36min 8s
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -12601,114 +12598,20 @@ A função recebe os dados de treinamento e validação, a lista de modelos, lis
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>A tabela abaixo mostra os resultados do gridsearch. Observamos que a RegressãoLogística foi a que obteve melhor resultado no conjunto de validação, sendo este escolhido como o melhor modelo.</p>
+<p>Implementamos a função evaluate_model para avaliar o nosso modelo.<br>
+A função calcula a matriz de confusão, acurácia, precision, recall e f1 para cada classe. Além disso, calcula também a taxa de acerto de captchas. Isto é, a porcentagem de vezes em que o modelo foi capaz de acertar os 4 caracteres dos captchas.</p>
+<p>Analisando as métricas e a matriz de confusão, podemos observar que alguns caracteres são classificados com pouco erro, como 'a','x' e 'h'. Entretanto o modelo se confunde muito entre 'm' e 'n', e entre 'b' e 'd'.</p>
+<p>Nosso resultado final foi acertar aproximadamente 30% dos captchas de validação.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;validation metric&#39;</span><span class="p">,</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[10]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
-
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>estimator</th>
-      <th>training metric</th>
-      <th>validation metric</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>LogisticRegression</td>
-      <td>0.9600</td>
-      <td>0.789116</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>KNeighborsClassifier</td>
-      <td>1.0000</td>
-      <td>0.770408</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>RandomForestClassifier</td>
-      <td>1.0000</td>
-      <td>0.751701</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>GaussianNB</td>
-      <td>0.6700</td>
-      <td>0.544218</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>DecisionTreeClassifier</td>
-      <td>0.9425</td>
-      <td>0.506803</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>O melhor valor de regularização escolhido foi 1, isto é, um modelo sem regularização.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">best_model</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">evaluate_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">valid_data</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12725,314 +12628,48 @@ A função recebe os dados de treinamento e validação, a lista de modelos, lis
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
-          intercept_scaling=1, max_iter=100, multi_class=&#39;ovr&#39;, n_jobs=1,
-          penalty=&#39;l1&#39;, random_state=42, solver=&#39;liblinear&#39;, tol=0.0001,
-          verbose=0, warm_start=False)
-</pre>
-</div>
-</div>
+<pre>confusion matrix
 
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Implementamos a função evaluate_by_character para avaliar com mais detalhes o melhor modelo escolhido. A função calcula a matriz de confusão, precision, recall e f1 para cada classe.</p>
-<p>Analisando as métricas e a matriz de confusão, podemos observar que alguns caracteres são classificados com pouco erro, como 'a','x' e 'h'. Entretanto o modelo se confunde mais entre 'm' e 'n', entre 'b' e 'd', entre 'c' e '7', entre 'c' e '6'.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">metrics</span><span class="p">,</span> <span class="n">conf</span> <span class="o">=</span> <span class="n">evaluation_per_character</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span><span class="n">best_model</span><span class="p">,</span><span class="n">valid_data</span><span class="p">)</span>
-<span class="n">taxa_caractere</span> <span class="o">=</span> <span class="n">evaluation_per_captcha</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span><span class="n">best_model</span><span class="p">,</span><span class="n">valid_data</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Métricas por caractere&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Matriz de confusão&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
+    d   c   n   6   7   x   m   a   b   h
+d  23   0   8   3   0   0   2   0  19   0
+c   1  45   1   9   2   2   0   0   6   0
+n   0   0  26   0   0   0  18   0   1   0
+6   1   8   2  49   0   4   2   0   4   0
+7   0   3   0   3  55   0   1   0   0   1
+x   0   0   2   1   0  64   0   0   0   0
+m   2   1  20   0   0   0  29   0   5   0
+a   0   0   0   0   0   0   0  64   0   0
+b   9   1   5   0   1   1   1   0  35   0
+h   0   0   0   0   0   0   0   2   0  54
 
 
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Métricas por caractere
              precision    recall  f1-score   support
 
-          6       0.83      0.77      0.80        65
-          7       0.80      0.90      0.85        61
-          a       1.00      0.94      0.97        62
-          b       0.59      0.86      0.70        58
-          c       0.78      0.72      0.75        69
-          d       0.70      0.44      0.54        48
-          h       0.96      0.96      0.96        70
-          m       0.69      0.60      0.64        62
-          n       0.67      0.72      0.69        47
-          x       0.89      0.91      0.90        46
+          6       0.75      0.70      0.73        70
+          7       0.95      0.87      0.91        63
+          a       0.97      1.00      0.98        64
+          b       0.50      0.66      0.57        53
+          c       0.78      0.68      0.73        66
+          d       0.64      0.42      0.51        55
+          h       0.98      0.96      0.97        56
+          m       0.55      0.51      0.53        57
+          n       0.41      0.58      0.48        45
+          x       0.90      0.96      0.93        67
 
-avg / total       0.80      0.79      0.79       588
+avg / total       0.76      0.74      0.75       596
 
-Matriz de confusão
+
+accuracy 0.74
+
+
+captchas hit rate 0.30
 </pre>
 </div>
 </div>
 
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
-
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>m</th>
-      <th>x</th>
-      <th>a</th>
-      <th>c</th>
-      <th>7</th>
-      <th>n</th>
-      <th>6</th>
-      <th>b</th>
-      <th>h</th>
-      <th>d</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>m</th>
-      <td>37</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>15</td>
-      <td>0</td>
-      <td>5</td>
-      <td>1</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>x</th>
-      <td>0</td>
-      <td>42</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>4</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>a</th>
-      <td>0</td>
-      <td>0</td>
-      <td>58</td>
-      <td>0</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>c</th>
-      <td>2</td>
-      <td>1</td>
-      <td>0</td>
-      <td>50</td>
-      <td>10</td>
-      <td>0</td>
-      <td>3</td>
-      <td>3</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>1</td>
-      <td>2</td>
-      <td>0</td>
-      <td>1</td>
-      <td>55</td>
-      <td>0</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>n</th>
-      <td>11</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>34</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>1</td>
-      <td>2</td>
-      <td>0</td>
-      <td>10</td>
-      <td>0</td>
-      <td>0</td>
-      <td>50</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>b</th>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>2</td>
-      <td>0</td>
-      <td>50</td>
-      <td>0</td>
-      <td>5</td>
-    </tr>
-    <tr>
-      <th>h</th>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>2</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>67</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>d</th>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>23</td>
-      <td>1</td>
-      <td>21</td>
-    </tr>
-  </tbody>
-</table>
 </div>
 </div>
 
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Por fim criamos a função evaluation_per_captcha que retorna a quantidade de captchas nos quais nosso melhor modelo foi capaz de acertar os 4 caracteres, dividida pela quantidade total de captchas de validação. Sendo que nosso resultado final foi acertar aproximadamente 40% dos captchas de validação.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">evaluation_per_captcha</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span><span class="n">best_model</span><span class="p">,</span><span class="n">valid_data</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[13]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>0.40816326530612246</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Coment&#225;rios-Finais">Coment&#225;rios Finais<a class="anchor-link" href="#Coment&#225;rios-Finais">&#182;</a></h1><p>Na avaliação do modelo, notamos que este sofre com overfitting e que alguns caracteres são confundidos com maior frequência.
-Para melhorar o desempenho do modelo e aumentar nossa taxa de acerto por caractere, definimos como próximos passos:</p>
-<ul>
-<li>Extrair mais variáveis através do mfcc;</li>
-<li>Explorar outras bibliotecas de extração de variáveis, por exemplo a python_speech_features;</li>
-<li>Fazer seleção de features</li>
-<li>Usar kfold no gridsearch para minimizar o overfitting;</li>
-<li>Testar ensembles e classificadores específicos para os caracteres mais similares;</li>
-</ul>
-
-</div>
-</div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -13049,25 +12686,13 @@ Para melhorar o desempenho do modelo e aumentar nossa taxa de acerto por caracte
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">caminho</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 
-<span class="n">final_train_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">train_data</span><span class="p">,</span><span class="n">valid_data</span><span class="p">],</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">final_train_data</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;captcha_label&#39;</span><span class="p">,</span><span class="s1">&#39;char_label&#39;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">final_train_data</span><span class="p">[</span><span class="s1">&#39;char_label&#39;</span><span class="p">]</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span><span class="n">columns</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-<span class="n">best_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">train_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">train_data</span><span class="p">,</span><span class="n">valid_data</span><span class="p">],</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
-<span class="n">test_audios</span> <span class="o">=</span> <span class="n">read_audio</span><span class="p">(</span><span class="n">caminho</span><span class="p">)</span>
+<span class="n">test_audios</span> <span class="o">=</span> <span class="n">read_audio</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 <span class="n">test_data</span> <span class="o">=</span> <span class="n">extract_features</span><span class="p">(</span><span class="n">test_audios</span><span class="p">)</span>
-<span class="n">metrics</span><span class="p">,</span> <span class="n">conf</span> <span class="o">=</span> <span class="n">evaluation_per_character</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span><span class="n">best_model</span><span class="p">,</span><span class="n">test_data</span><span class="p">)</span>
-<span class="n">taxa_caractere</span> <span class="o">=</span> <span class="n">evaluation_per_captcha</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span><span class="n">best_model</span><span class="p">,</span><span class="n">valid_data</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Métricas por caractere&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Matriz de confusão&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Taxa de acerto por captchas&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">taxa_caractere</span><span class="p">)</span>
+<span class="n">evaluate_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
 </pre></div>
 
 </div>
